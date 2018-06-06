@@ -42,7 +42,7 @@ const changeToggleIcon = (isEnabled) => {
 
 const getDomain = (url) => {
     const match = url.match(/:\/\/(.[^/]+)/);
-    
+
     return match ? match[1] : '';
 };
 
@@ -100,13 +100,14 @@ const runBlocker = (blacklist) => {
             color: [200, 0, 0, 100],
             tabId: details.tabId,
         });
-        
+
         chrome.browserAction.setBadgeText({
             text: '!',
             tabId: details.tabId,
         });
 
         detected[details.tabId] = true;
+        chrome.tabs.sendMessage(details.tabId, {message: "AHNMO_DETECTED"}); // XXX: THIS
 
         // Globally paused
         if (!config.toggle) {
@@ -129,7 +130,7 @@ const runBlocker = (blacklist) => {
         });
 
         return { cancel: true };
-    }, { 
+    }, {
         urls: blacklistedUrls
     }, ['blocking']);
 };
@@ -148,7 +149,7 @@ const runFallbackBlocker = () => {
 // Updating domain for synchronous checking in onBeforeRequest
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     domains[tabId] = getDomain(tab.url);
-    
+
     // Set back to normal when navigating
     if (changeInfo === 'loading') {
         if (config.toggle) {
@@ -159,7 +160,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         }
 
         detected[details.tabId] = false;
-    
+
         chrome.browserAction.setBadgeText({
             text: '',
             tabId,
